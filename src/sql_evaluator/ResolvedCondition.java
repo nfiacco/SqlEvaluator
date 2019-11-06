@@ -1,6 +1,6 @@
 package sql_evaluator;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class ResolvedCondition {
     public final Condition.Op op;
@@ -18,9 +18,9 @@ public class ResolvedCondition {
         this.type = type;
     }
 
-    public boolean evaluate(ArrayList<Object> row) {
-        Object valueLeft = left.getValueForRow(row);
-        Object valueRight = right.getValueForRow(row);
+    public boolean evaluate(List<Object> leftRow, List<Object> rightRow) {
+        Object valueLeft = left.getValueForRow(leftRow);
+        Object valueRight = right.getValueForRow(rightRow);
 
         switch (type) {
             case INT:

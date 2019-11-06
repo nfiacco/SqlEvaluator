@@ -1,6 +1,6 @@
 package sql_evaluator;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public abstract class ResolvedTerm {
     public final SqlType type;
@@ -9,5 +9,5 @@ public abstract class ResolvedTerm {
         this.type = type;
     }
 
-    public abstract Object getValueForRow(final ArrayList<Object> row);
+    public abstract Object getValueForRow(final List<Object> row);
 }

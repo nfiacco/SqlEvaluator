@@ -1,6 +1,6 @@
 package sql_evaluator;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class ResolvedColumn extends ResolvedTerm {
     public final int columnIndex;
@@ -10,7 +10,7 @@ public class ResolvedColumn extends ResolvedTerm {
         this.columnIndex = columnIndex;
     }
 
-    public Object getValueForRow(final ArrayList<Object> row) {
+    public Object getValueForRow(final List<Object> row) {
         return row.get(columnIndex);
     }
 }

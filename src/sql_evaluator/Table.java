@@ -17,8 +17,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Represents the data loaded from a ".table.json" file.
@@ -40,15 +39,10 @@ public final class Table extends Node {
         }
     }
 
-    public Table filter(final List<Condition> conditions) {
-        List<ResolvedCondition> resolvedConditions = new ArrayList<>();
-        for (Condition condition : conditions) {
-            resolvedConditions.add(resolveCondition(condition));
-        }
-
+    public Table filter(final List<ResolvedCondition> resolvedConditions) {
         ArrayList<ArrayList<Object>> matchingRows = new ArrayList<>();
         for (ArrayList<Object> row : rows) {
-            if (rowMatches(row, resolvedConditions)) {
+            if (rowMatches(row, null, resolvedConditions)) {
                 matchingRows.add(row);
             }
         }
@@ -78,76 +72,57 @@ public final class Table extends Node {
         return new Table(selectedColumns, selectedRows);
     }
 
-    private ResolvedCondition resolveCondition(final Condition condition){
-        ResolvedTerm leftTerm;
-        if (condition.left instanceof Term.Column) {
-            leftTerm = resolveColumn((Term.Column) condition.left);
+    Optional<ColumnDef> getMatchingColumn(final ColumnRef columnRef) {
+        int index = getMatchingColumnIndex(columnRef);
+        if (index >= 0) {
+            return Optional.of(columns.get(index));
         } else {
-            leftTerm = ResolvedLiteral.fromLiteral((Term.Literal) condition.left);
+            return Optional.empty();
         }
-
-        ResolvedTerm rightTerm;
-        if (condition.right instanceof Term.Column) {
-            rightTerm = resolveColumn((Term.Column) condition.right);
-        } else {
-            rightTerm = ResolvedLiteral.fromLiteral((Term.Literal) condition.right);
-        }
-
-        SqlType leftType = leftTerm.type;
-        SqlType rightType = rightTerm.type;
-        if (leftType != rightType) {
-            throw new RuntimeException("ERROR: Incompatible types to \"" + condition.op.symbol + "\": "
-                    + leftType.name.toLowerCase() + " and " + rightType.name.toLowerCase() + ".");
-        }
-
-        return new ResolvedCondition(condition.op, leftTerm, rightTerm, rightType);
-    }
-
-    private ResolvedTerm resolveColumn(final Term.Column term) {
-        int index = getMatchingColumnIndex(term.ref);
-        ColumnDef columnDef = columns.get(index);
-        return new ResolvedColumn(index, columnDef.type);
     }
 
     private int getMatchingColumnIndex(final ColumnRef columnRef) {
-        List<Integer> matches = new ArrayList<>();
         for (int i = 0; i < columns.size(); i++) {
             ColumnDef columnDef = columns.get(i);
             if (columnDef.matchesReference(columnRef)) {
-                matches.add(i);
+                return i;
             }
         }
 
-        if (matches.size() == 1) {
-            return matches.get(0);
-        } else if (matches.size() > 1) {
-            String matchesString = "";
-            boolean first = true;
-            for (int i : matches) {
-                ColumnDef match = columns.get(i);
-                if (!first) {
-                    matchesString = matchesString + ", ";
-                }
-                first = false;
-                matchesString = matchesString + "\"" + match.qualifier + "\"";
-            }
-            throw new RuntimeException("ERROR: Column reference \"" + columnRef.name
-                    + "\" is ambiguous; present in multiple tables: " + matchesString + ".");
-        } else {
-            throw new RuntimeException("ERROR: Unknown table name \"" + columnRef.table + "\".");
-        }
+        return -1;
     }
 
-    private boolean rowMatches(final ArrayList<Object> row, final List<ResolvedCondition> conditions) {
+    private boolean rowMatches(final List<Object> leftRow, final List<Object> rightRow,
+                               final List<ResolvedCondition> conditions) {
         boolean match = true;
         for (ResolvedCondition condition : conditions) {
-
-            if (!condition.evaluate(row)) {
+            if (!condition.evaluate(leftRow, rightRow)) {
                 match = false;
             }
         }
 
         return match;
+    }
+
+    Table innerJoin(final Table other, final List<ResolvedCondition> conditions) {
+        ArrayList<ColumnDef> outputColumns = new ArrayList<>();
+        outputColumns.addAll(columns);
+        outputColumns.addAll(other.columns);
+
+        ArrayList<ArrayList<Object>> outputRows = new ArrayList<>();
+        for (List<Object> leftRow : rows) {
+            for (List<Object> rightRow : other.rows) {
+                ArrayList<Object> outputRow = new ArrayList<>();
+                outputRow.addAll(leftRow);
+                outputRow.addAll(rightRow);
+
+                if (rowMatches(leftRow, rightRow, conditions)) {
+                    outputRows.add(outputRow);
+                }
+            }
+        }
+
+        return new Table(outputColumns, outputRows);
     }
 
     Table crossJoin(final Table other) {

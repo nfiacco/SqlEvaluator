@@ -1,6 +1,6 @@
 package sql_evaluator;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class ResolvedLiteral extends ResolvedTerm {
     public final Object value;
@@ -14,7 +14,7 @@ public class ResolvedLiteral extends ResolvedTerm {
         this.value = value;
     }
 
-    public Object getValueForRow(final ArrayList<Object> row) {
+    public Object getValueForRow(final List<Object> row) {
         return value;
     }
 }

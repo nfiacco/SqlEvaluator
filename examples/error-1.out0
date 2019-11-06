@@ -1,0 +1,7 @@
+[
+    [["name","str"],["capital","str"],["name","str"],["country","str"],["population","int"]],
+    ["USA","Washington DC","Washington DC","USA",681],
+    ["Canada","Ottawa","Ottawa","Canada",934],
+    ["India","Delhi","Delhi","India",11034],
+    ["Japan","Tokyo","Tokyo","Japan",13513]
+]

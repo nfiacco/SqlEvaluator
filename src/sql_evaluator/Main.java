@@ -42,12 +42,9 @@ public final class Main {
         }
 
         try {
-            Table crossJoinTable = createCrossJoinTable(tables);
-            Table filteredTable = crossJoinTable.filter(query.where);
-            Table selectedTable = filteredTable.select(query.select);
-
+            Table outputTable = Executor.executeQuery(tables, query);
             try (FileWriter out = new FileWriter(outputFile)) {
-                writeTable(out, selectedTable);
+                writeTable(out, outputTable);
             }
         } catch (RuntimeException e) {
             try (FileWriter out = new FileWriter(outputFile)) {
@@ -56,19 +53,6 @@ public final class Main {
         }
     }
 
-    public static Table createCrossJoinTable(final List<Table> tables) {
-        Table crossJoinTable = null;
-        for (Table table : tables) {
-            if (crossJoinTable == null) {
-                // start off the cross-joined table with qualified names
-                crossJoinTable = new Table(table.columns, table.rows);
-            } else {
-                crossJoinTable = crossJoinTable.crossJoin(table);
-            }
-        }
-
-        return crossJoinTable;
-    }
 
     public static void writeTable(Writer out, Table table) throws IOException {
         out.write("[\n");

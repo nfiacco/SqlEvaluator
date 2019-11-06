@@ -29,5 +29,23 @@ public final class Condition extends Node {
         public final String symbol;
 
         Op(String symbol) { this.symbol = symbol; }
+
+        public Op reverse() {
+            switch (this) {
+                case EQ:
+                case NE:
+                    return this;
+                case LT:
+                    return GT;
+                case LE:
+                    return GE;
+                case GT:
+                    return LT;
+                case GE:
+                    return LE;
+                default:
+                    throw new RuntimeException("ERROR: unexpected operation type.");
+            }
+        }
     }
 }
