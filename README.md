@@ -19,8 +19,10 @@ I started with the straightforward Cartesian product (cross join) approach. The 
 1) Verify conditions and selectors
 2) Iterate table by table in the "from" clause
     1) Apply any relevant filters
-    2) Perform a join with the output of the previous iteration
-        1) If the join has any relevant conditions, perform a nested loop join
+    2) Perform a join with the output of the previous iteration:
+        1) If the join has any relevant conditions:
+            1) If there is an equality condition, perform a hash join using that condition's attributes
+            2) Otherwise, perform a nested loop join
         2) If not, perform a simple cross join
 3) Select the output columns
 
@@ -35,11 +37,10 @@ This implementation doesn't take advantage of several query optimization techniq
 
 2) Implement sorted merge join-- and re-use the sorted indices for future queries
 
-3) Implement hash join, and re-use the index for future queries.
+3) Do some analysis on the statistical properties of the tables and use that as input for the query optimization.
 
-4) Do some analysis on the statistical properties of the tables and use that as input for the query optimization.
+4) Use a cost-based query plan evaluation algorithm.
 
-5) Use a cost-based query plan evaluation algorithm.
-
-To implement several of these optimizations, some serious re-architecting would need to be done in order to build
-query plan trees, which are the basic unit that most optimizers work with.
+To implement several of these optimizations, some re-architecting would need to be done in order to build query plan
+trees, which are the structures that most SQL optimizers work with. This would entail generating some relational
+algebra from the SQL query, then constructing the tree, then optimizing based on heuristics and estimated cost.

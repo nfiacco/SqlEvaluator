@@ -42,6 +42,7 @@ public final class Main {
         }
 
         try {
+            Validator.checkQueryValidity(tables, query);
             Table outputTable = Executor.executeQuery(tables, query);
             try (FileWriter out = new FileWriter(outputFile)) {
                 writeTable(out, outputTable);

@@ -104,6 +104,40 @@ public final class Table extends Node {
         return match;
     }
 
+    Table hashJoin(final Table other, final ResolvedCondition indexCondition,
+                   final List<ResolvedCondition> remainingConditions) {
+        ArrayList<ColumnDef> outputColumns = new ArrayList<>();
+        outputColumns.addAll(columns);
+        outputColumns.addAll(other.columns);
+
+        Map<Object, List<List<Object>>> index = new HashMap<>();
+        for (List<Object> leftRow : rows) {
+            Object key = indexCondition.left.getValueForRow(leftRow);
+            List<List<Object>> rowList = index.getOrDefault(key, new ArrayList<>());
+            rowList.add(leftRow);
+            index.put(key, rowList);
+        }
+
+        ArrayList<ArrayList<Object>> outputRows = new ArrayList<>();
+        for (List<Object> rightRow : other.rows) {
+            Object key = indexCondition.right.getValueForRow(rightRow);
+            if (index.containsKey(key)) {
+                List<List<Object>> matchingRows = index.get(key);
+                for (List<Object> leftRow : matchingRows) {
+                    ArrayList<Object> outputRow = new ArrayList<>();
+                    outputRow.addAll(leftRow);
+                    outputRow.addAll(rightRow);
+
+                    if (rowMatches(leftRow, rightRow, remainingConditions)) {
+                        outputRows.add(outputRow);
+                    }
+                }
+            }
+        }
+
+        return new Table(outputColumns, outputRows);
+    }
+
     Table innerJoin(final Table other, final List<ResolvedCondition> conditions) {
         ArrayList<ColumnDef> outputColumns = new ArrayList<>();
         outputColumns.addAll(columns);
