@@ -8,8 +8,23 @@ how query planning works in real SQL engines, and selected a few optimizations I
 implementing these optimizations cleanly took me another 3 hours.
 
 ### Instructions
-To run, build the project by navigating to the root of the project and running `mvn compile`. You can then execute the
-code with the `check` command. For example, to run all the tests in the `examples` folder:
+To run, build the project by navigating to the root of the project and running `mvn compile`.
+
+Then, execute the program using the `sql_evaluator` script. For example, to run the "simple-1.sql" example query:
+```
+./sql-to-json examples/simple-1.sql  # Writes to "examples/simple-1.sql.json"
+./sql_evaluator examples examples/simple-1.sql.json examples/simple-1.out
+diff examples/simple-1.expected examples/simple-1.out
+```
+
+You can then execute all three of these steps by using the `check` command:
+
+```
+./check ./sql_evaluator -- examples examples/simple-1.sql
+```
+
+Using this script, you can also run multiple tests:
+
 ```
 ./check ./sql_evaluator -- examples examples/*.sql
 ```
@@ -44,3 +59,8 @@ This implementation doesn't take advantage of several query optimization techniq
 To implement several of these optimizations, some re-architecting would need to be done in order to build query plan
 trees, which are the structures that most SQL optimizers work with. This would entail generating some relational
 algebra from the SQL query, then constructing the tree, then optimizing based on heuristics and estimated cost.
+
+### Credits
+The query parsing and execution scripts were both provided as part of the assignment. My work involved adding the
+`Executor.java` and `Validator.java` classes, all of the `Resolved\*` classes, and modifications to the `Table.java`
+class to support various join, filter, and select operations. This enables execution of the actual parsed query.
