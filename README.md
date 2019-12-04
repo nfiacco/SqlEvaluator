@@ -1,11 +1,9 @@
 ## SQL Evaluator - Java
 
-### Process
-The assignment took me around 10 hours. It took me about 3 hours to get a basic MVP working with the cross
- join method, with some time spent to catch all the edge cases. Coming up with a plan to get clean abstractions
-for bookkeeping to quite a while. I spent another 4 hours reading about various query optimization techniques and
-how query planning works in real SQL engines, and selected a few optimizations I could easily apply here. Actually
-implementing these optimizations cleanly took me another 3 hours.
+### Overview
+This project implements a basic SQL engine, which parses and executes a subset of SQL. There are several optimizations
+implemented to improve the performance of queries, such as implicitly converting cross joins to inner joins where
+possible.
 
 ### Instructions
 To run, build the project by navigating to the root of the project and running `mvn compile`.
